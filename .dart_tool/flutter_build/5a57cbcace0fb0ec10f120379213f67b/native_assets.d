@@ -1,0 +1,1 @@
+ C:\\Dev\\sensor\\.dart_tool\\flutter_build\\5a57cbcace0fb0ec10f120379213f67b\\native_assets.yaml: 
