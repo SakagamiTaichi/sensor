@@ -100,7 +100,8 @@ class LiquidSimulator extends _$LiquidSimulator {
   }
 
   // 画面上のタップ位置にパーティクルを追加するメソッド
-  void addParticleAtPosition(double x, double y) {
+  void addParticleAtPosition(double x, double y,
+      [double sizeMultiplier = 1.0]) {
     final width = state.width;
     final height = state.height;
 
@@ -109,8 +110,10 @@ class LiquidSimulator extends _$LiquidSimulator {
 
     // 物理スケールの係数
     final double scale = LiquidSimulatorState.physicsScale;
+
+    // サイズ倍率を適用して粒子半径を計算
     final double scaledParticleRadius =
-        LiquidSimulatorState.particleRadius * scale;
+        LiquidSimulatorState.particleRadius * scale * sizeMultiplier;
 
     // 画面座標から物理座標に変換
     // 画面の中心が原点(0,0)、左上が(-width/2, -height/2)になるよう変換
@@ -127,7 +130,7 @@ class LiquidSimulator extends _$LiquidSimulator {
 
     final particleBody = state.world.createBody(particleBodyDef);
 
-    // 形状の定義
+    // 形状の定義 - サイズ倍率を適用
     final shape = CircleShape()..radius = scaledParticleRadius;
 
     // Fixtureの定義

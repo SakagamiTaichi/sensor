@@ -1,4 +1,4 @@
-// liquid.dart
+// liquid.dart (修正部分)
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:forge2d/forge2d.dart';
@@ -41,16 +41,23 @@ class LiquidPainter extends CustomPainter {
       final x = width / 2 + position.x / physicsScale;
       final y = height / 2 + position.y / physicsScale;
 
+      // Fixtureのサイズを取得
+      double radius = particleRadius;
+      if (body.fixtures.isNotEmpty) {
+        final fixture = body.fixtures.first;
+        if (fixture.shape is CircleShape) {
+          // 物理スケールに基づいて実際の描画半径を計算
+          radius = (fixture.shape as CircleShape).radius / physicsScale;
+        }
+      }
+
+      // ブラー効果のため少し大きく描画
       offscreenCanvas.drawCircle(
         Offset(x, y),
-        particleRadius * 1.2, // ブラー効果のため少し大きく
+        radius * 1.2,
         blurPaint,
       );
     }
-
-    // ブラーエフェクトを適用した画像を描画
-    final picture = recorder.endRecording();
-    final image = picture.toImage(size.width.toInt(), size.height.toInt());
 
     // 通常の描画
     for (final body in particles) {
@@ -58,9 +65,19 @@ class LiquidPainter extends CustomPainter {
       final x = width / 2 + position.x / physicsScale;
       final y = height / 2 + position.y / physicsScale;
 
+      // Fixtureのサイズを取得
+      double radius = particleRadius;
+      if (body.fixtures.isNotEmpty) {
+        final fixture = body.fixtures.first;
+        if (fixture.shape is CircleShape) {
+          // 物理スケールに基づいて実際の描画半径を計算
+          radius = (fixture.shape as CircleShape).radius / physicsScale;
+        }
+      }
+
       canvas.drawCircle(
         Offset(x, y),
-        particleRadius,
+        radius,
         paint,
       );
     }
