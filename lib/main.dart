@@ -28,46 +28,96 @@ class MyApp extends StatelessWidget {
   }
 }
 
-class BallSimulationPage extends ConsumerWidget {
-  const BallSimulationPage({super.key});
+class BallSimulationPage extends ConsumerStatefulWidget {
+  const BallSimulationPage({Key? key}) : super(key: key);
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    // Riverpodを使って状態を監視
-    final simulatorState = ref.watch(ballSimulatorProvider);
+  ConsumerState<BallSimulationPage> createState() => _BallSimulationPageState();
+}
 
+class _BallSimulationPageState extends ConsumerState<BallSimulationPage> {
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // フレーム描画後に実行
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final size = MediaQuery.of(context).size;
+      ref
+          .read(ballSimulatorProvider.notifier)
+          .updateScreenSize(size.width, size.height);
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final simulatorState = ref.watch(ballSimulatorProvider);
     return Scaffold(
       appBar: AppBar(
         title: const Text('重力ボールシミュレーション (Forge2D with Riverpod & Freezed)'),
       ),
       body: LayoutBuilder(
         builder: (context, constraints) {
-          // 画面サイズを更新
-          ref
-              .read(ballSimulatorProvider.notifier)
-              .updateScreenSize(constraints.maxWidth, constraints.maxHeight);
-
           return Center(
-            child: Container(
-              width: constraints.maxWidth,
-              height: constraints.maxHeight,
-              color: Colors.grey[200],
-              child: CustomPaint(
-                painter: BallPainter(
-                  ballBody: simulatorState.ballBody,
-                  ballRadius: BallSimulatorState.ballRadius,
-                  physicsScale: BallSimulatorState.physicsScale,
-                  width: simulatorState.width,
-                  height: simulatorState.height,
-                ),
+              child: Container(
+            width: constraints.maxWidth,
+            height: constraints.maxHeight,
+            color: Colors.grey[200],
+            child: CustomPaint(
+              painter: BallPainter(
+                ballBody: simulatorState.ballBody,
+                ballRadius: BallSimulatorState.ballRadius,
+                physicsScale: BallSimulatorState.physicsScale,
+                width: simulatorState.width,
+                height: simulatorState.height,
               ),
             ),
-          );
+          ));
         },
       ),
     );
   }
 }
+
+// class BallSimulationPage extends ConsumerWidget {
+//   const BallSimulationPage({super.key});
+
+//   @override
+//   Widget build(BuildContext context, WidgetRef ref) {
+//     // Riverpodを使って状態を監視
+//     final simulatorState = ref.watch(ballSimulatorProvider);
+
+//     return Scaffold(
+//       appBar: AppBar(
+//         title: const Text('重力ボールシミュレーション (Forge2D with Riverpod & Freezed)'),
+//       ),
+//       body: LayoutBuilder(
+//         builder: (context, constraints) {
+//           // 画面サイズを更新
+//           // ref
+//           //     .read(ballSimulatorProvider.notifier)
+//           //     .updateScreenSize(constraints.maxWidth, constraints.maxHeight);
+
+//           return Center(
+//             child: Container(
+//               width: constraints.maxWidth,
+//               height: constraints.maxHeight,
+//               color: Colors.grey[200],
+//               child: CustomPaint(
+//                 painter: BallPainter(
+//                   ballBody: simulatorState.ballBody,
+//                   ballRadius: BallSimulatorState.ballRadius,
+//                   physicsScale: BallSimulatorState.physicsScale,
+//                   width: simulatorState.width,
+//                   height: simulatorState.height,
+//                 ),
+//               ),
+//             ),
+//           );
+//         },
+//       ),
+//     );
+//   }
+// }
 
 // ボールを描画するためのカスタムペインター
 class BallPainter extends CustomPainter {
