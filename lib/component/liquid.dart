@@ -1,7 +1,7 @@
-// liquid.dart (修正部分)
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:forge2d/forge2d.dart';
+import 'package:sensor/model/particle_data.dart'; // 新しく作成したクラスをインポート
 
 class LiquidPainter extends CustomPainter {
   final List<Body> particles;
@@ -9,7 +9,7 @@ class LiquidPainter extends CustomPainter {
   final double physicsScale;
   final double width;
   final double height;
-  final Color liquidColor;
+  final Color defaultLiquidColor; // デフォルトの色
 
   LiquidPainter({
     required this.particles,
@@ -17,36 +17,37 @@ class LiquidPainter extends CustomPainter {
     required this.physicsScale,
     required this.width,
     required this.height,
-    this.liquidColor = const Color(0x884FC3F7), // 半透明の水色
+    this.defaultLiquidColor = const Color(0x884FC3F7), // デフォルト色
   });
 
   @override
   void paint(Canvas canvas, Size size) {
-    // 通常の粒子描画
-    final paint = Paint()
-      ..color = liquidColor
-      ..style = PaintingStyle.fill;
-
     // メタボール効果のためのオフスクリーンキャンバス
     final recorder = PictureRecorder();
     final offscreenCanvas = Canvas(recorder);
-    final blurPaint = Paint()
-      ..color = liquidColor
-      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 8.0)
-      ..style = PaintingStyle.fill;
 
     for (final body in particles) {
       final position = body.position;
-      // 物理座標から画面座標に変換
       final x = width / 2 + position.x / physicsScale;
       final y = height / 2 + position.y / physicsScale;
+
+      // パーティクルの色を取得
+      Color particleColor = defaultLiquidColor;
+      if (body.userData is ParticleData) {
+        particleColor = (body.userData as ParticleData).color;
+      }
+
+      // ブラーペイントを各パーティクルの色で作成
+      final blurPaint = Paint()
+        ..color = particleColor
+        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 8.0)
+        ..style = PaintingStyle.fill;
 
       // Fixtureのサイズを取得
       double radius = particleRadius;
       if (body.fixtures.isNotEmpty) {
         final fixture = body.fixtures.first;
         if (fixture.shape is CircleShape) {
-          // 物理スケールに基づいて実際の描画半径を計算
           radius = (fixture.shape as CircleShape).radius / physicsScale;
         }
       }
@@ -65,12 +66,21 @@ class LiquidPainter extends CustomPainter {
       final x = width / 2 + position.x / physicsScale;
       final y = height / 2 + position.y / physicsScale;
 
+      // パーティクルの色を取得
+      Color particleColor = defaultLiquidColor;
+      if (body.userData is ParticleData) {
+        particleColor = (body.userData as ParticleData).color;
+      }
+
+      final paint = Paint()
+        ..color = particleColor
+        ..style = PaintingStyle.fill;
+
       // Fixtureのサイズを取得
       double radius = particleRadius;
       if (body.fixtures.isNotEmpty) {
         final fixture = body.fixtures.first;
         if (fixture.shape is CircleShape) {
-          // 物理スケールに基づいて実際の描画半径を計算
           radius = (fixture.shape as CircleShape).radius / physicsScale;
         }
       }

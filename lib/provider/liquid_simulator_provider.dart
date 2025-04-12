@@ -1,7 +1,9 @@
 // liquid_simulator_provider.dart
 import 'dart:math';
+import 'dart:ui';
 import 'package:forge2d/forge2d.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:sensor/model/particle_data.dart';
 import 'package:sensor/state/liquid_simulator_state.dart';
 import 'package:sensors_plus/sensors_plus.dart';
 
@@ -99,28 +101,26 @@ class LiquidSimulator extends _$LiquidSimulator {
     _createPhysicsObjects();
   }
 
+  // 色を変更するメソッドを追加
+  void updateColor(Color newColor) {
+    state = state.copyWith(currentColor: newColor);
+  }
+
   // 画面上のタップ位置にパーティクルを追加するメソッド
   void addParticleAtPosition(double x, double y,
       [double sizeMultiplier = 1.0]) {
     final width = state.width;
     final height = state.height;
 
-    // 画面がまだ測定されていない場合は早期リターン
     if (width == 0 || height == 0) return;
 
-    // 物理スケールの係数
     final double scale = LiquidSimulatorState.physicsScale;
-
-    // サイズ倍率を適用して粒子半径を計算
     final double scaledParticleRadius =
         LiquidSimulatorState.particleRadius * scale * sizeMultiplier;
 
-    // 画面座標から物理座標に変換
-    // 画面の中心が原点(0,0)、左上が(-width/2, -height/2)になるよう変換
     final physicsX = (x - width / 2) * scale;
     final physicsY = (y - height / 2) * scale;
 
-    // パーティクルのBodyDefを作成
     final particleBodyDef = BodyDef()
       ..type = BodyType.dynamic
       ..position = Vector2(physicsX, physicsY)
@@ -130,10 +130,11 @@ class LiquidSimulator extends _$LiquidSimulator {
 
     final particleBody = state.world.createBody(particleBodyDef);
 
-    // 形状の定義 - サイズ倍率を適用
+    // パーティクル用の色情報をBodyのuserDataに保存
+    particleBody.userData = ParticleData(color: state.currentColor);
+
     final shape = CircleShape()..radius = scaledParticleRadius;
 
-    // Fixtureの定義
     final fixtureDef = FixtureDef(shape)
       ..density = LiquidSimulatorState.particleDensity
       ..friction = LiquidSimulatorState.particleFriction
@@ -142,7 +143,6 @@ class LiquidSimulator extends _$LiquidSimulator {
 
     particleBody.createFixture(fixtureDef);
 
-    // 新しいパーティクルリストを作成して状態を更新
     final newParticles = List<Body>.from(state.particles)..add(particleBody);
     state = state.copyWith(particles: newParticles);
   }
