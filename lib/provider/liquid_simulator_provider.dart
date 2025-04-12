@@ -99,6 +99,51 @@ class LiquidSimulator extends _$LiquidSimulator {
     _createPhysicsObjects();
   }
 
+  // 画面上のタップ位置にパーティクルを追加するメソッド
+  void addParticleAtPosition(double x, double y) {
+    final width = state.width;
+    final height = state.height;
+
+    // 画面がまだ測定されていない場合は早期リターン
+    if (width == 0 || height == 0) return;
+
+    // 物理スケールの係数
+    final double scale = LiquidSimulatorState.physicsScale;
+    final double scaledParticleRadius =
+        LiquidSimulatorState.particleRadius * scale;
+
+    // 画面座標から物理座標に変換
+    // 画面の中心が原点(0,0)、左上が(-width/2, -height/2)になるよう変換
+    final physicsX = (x - width / 2) * scale;
+    final physicsY = (y - height / 2) * scale;
+
+    // パーティクルのBodyDefを作成
+    final particleBodyDef = BodyDef()
+      ..type = BodyType.dynamic
+      ..position = Vector2(physicsX, physicsY)
+      ..bullet = false
+      ..allowSleep = true
+      ..linearDamping = 0.4;
+
+    final particleBody = state.world.createBody(particleBodyDef);
+
+    // 形状の定義
+    final shape = CircleShape()..radius = scaledParticleRadius;
+
+    // Fixtureの定義
+    final fixtureDef = FixtureDef(shape)
+      ..density = LiquidSimulatorState.particleDensity
+      ..friction = LiquidSimulatorState.particleFriction
+      ..restitution = LiquidSimulatorState.elasticity
+      ..filter.groupIndex = -1;
+
+    particleBody.createFixture(fixtureDef);
+
+    // 新しいパーティクルリストを作成して状態を更新
+    final newParticles = List<Body>.from(state.particles)..add(particleBody);
+    state = state.copyWith(particles: newParticles);
+  }
+
   // 物理オブジェクトを作成するメソッド
   void _createPhysicsObjects() {
     final width = state.width;

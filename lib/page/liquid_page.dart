@@ -33,7 +33,7 @@ class _LiquidSimulationPageState extends ConsumerState<LiquidSimulationPage> {
     final simulatorState = ref.watch(liquidSimulatorProvider);
     return Scaffold(
       appBar: AppBar(
-        title: const Text('液体シミュレーション - 端末の傾きで水が動きます'),
+        title: const Text('液体シミュレーション - 端末の傾きで水が動きます・タップで追加'),
       ),
       body: LayoutBuilder(
         builder: (context, constraints) {
@@ -44,25 +44,33 @@ class _LiquidSimulationPageState extends ConsumerState<LiquidSimulationPage> {
                 .updateScreenSize(constraints.maxWidth, constraints.maxHeight);
           });
 
-          return Stack(
-            children: [
-              // 液体パーティクル
-              Center(
-                child: SizedBox(
-                  width: constraints.maxWidth,
-                  height: constraints.maxHeight,
-                  child: CustomPaint(
-                    painter: LiquidPainter(
-                      particles: simulatorState.particles,
-                      particleRadius: LiquidSimulatorState.particleRadius,
-                      physicsScale: LiquidSimulatorState.physicsScale,
-                      width: simulatorState.width,
-                      height: simulatorState.height,
-                    ),
-                  ),
+          // GestureDetectorを直接CustomPaintに適用
+          return GestureDetector(
+            // この設定が重要：透明な領域でもタップを検知するようにする
+            behavior: HitTestBehavior.opaque,
+            onTapDown: (details) {
+              // タップ位置を物理座標に変換してパーティクルを追加
+              final position = details.localPosition;
+              ref
+                  .read(liquidSimulatorProvider.notifier)
+                  .addParticleAtPosition(position.dx, position.dy);
+            },
+            child: Container(
+              width: constraints.maxWidth,
+              height: constraints.maxHeight,
+              color: Colors.grey[200], // 背景色を追加
+              child: CustomPaint(
+                painter: LiquidPainter(
+                  particles: simulatorState.particles,
+                  particleRadius: LiquidSimulatorState.particleRadius,
+                  physicsScale: LiquidSimulatorState.physicsScale,
+                  width: simulatorState.width,
+                  height: simulatorState.height,
                 ),
+                // サイズをいっぱいに
+                size: Size(constraints.maxWidth, constraints.maxHeight),
               ),
-            ],
+            ),
           );
         },
       ),
