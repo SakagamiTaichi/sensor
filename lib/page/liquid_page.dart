@@ -32,9 +32,6 @@ class _LiquidSimulationPageState extends ConsumerState<LiquidSimulationPage> {
   Widget build(BuildContext context) {
     final simulatorState = ref.watch(liquidSimulatorProvider);
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('液体シミュレーション - 端末の傾きで水が動きます・タップで追加'),
-      ),
       body: LayoutBuilder(
         builder: (context, constraints) {
           // 画面サイズが変更されたときに通知
