@@ -191,6 +191,9 @@ class LiquidSimulator extends _$LiquidSimulator {
 
       final particleBody = state.world.createBody(particleBodyDef);
 
+      // この行を追加: パーティクル用の色情報をBodyのuserDataに保存
+      particleBody.userData = ParticleData(color: state.currentColor);
+
       final shape = CircleShape()..radius = scaledParticleRadius;
 
       final fixtureDef = FixtureDef(shape)
